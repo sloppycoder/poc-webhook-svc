@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class WebhookSvcApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(WebhookSvcApplication.class, args);
-    }
-
+  public static void main(String[] args) {
+    SpringApplication.run(WebhookSvcApplication.class, args);
+  }
 }

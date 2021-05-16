@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: webhook
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost/poc
+    username: pocuser
+    password: password
+    initialization-mode: always
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: metrics,loggers
