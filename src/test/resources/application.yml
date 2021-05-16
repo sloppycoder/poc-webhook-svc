@@ -6,5 +6,4 @@ spring:
     name: webhook
 
   r2dbc:
-    url: r2dbc:h2:mem:///testdb
-    initialization-mode: always
+    url: r2dbc:h2:mem:///testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
