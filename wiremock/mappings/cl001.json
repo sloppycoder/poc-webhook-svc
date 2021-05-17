@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "url": "/cl001"
+    "url": "/CL001"
   },
   "response": {
     "status": 200,
