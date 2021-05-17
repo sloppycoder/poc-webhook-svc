@@ -8,13 +8,13 @@ import org.vino9.ms.webhooksvc.data.WebhookRequestRepository;
 
 @Service
 @Slf4j
-public class WebhookWorker {
+public class ScheduledWorker {
   private final WebhookRequestRepository repository;
   private final WebhookInvoker client;
   private boolean suspended = false;
 
   @Autowired
-  public WebhookWorker(WebhookRequestRepository repository, WebhookInvoker client) {
+  public ScheduledWorker(WebhookRequestRepository repository, WebhookInvoker client) {
     this.repository = repository;
     this.client = client;
   }
@@ -25,11 +25,12 @@ public class WebhookWorker {
       log.info("worker suspended");
       return;
     }
-    repository.findAll()
-            .map(client::invoke)
-            .flatMap(s -> s)
-            .flatMap(repository::save)
-            .subscribe();
+    repository
+        .findPendingRequests()
+        .map(client::invoke)
+        .flatMap(s -> s)
+        .flatMap(repository::save)
+        .subscribe();
   }
 
   public boolean isSuspended() {

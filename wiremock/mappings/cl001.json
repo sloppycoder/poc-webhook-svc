@@ -11,7 +11,7 @@
     },
     "delayDistribution": {
       "type": "lognormal",
-      "median": 10000,
+      "median": 100000,
       "sigma": 0.5
     }
   }

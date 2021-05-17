@@ -23,14 +23,6 @@ public class WebhookRequest {
   private LocalDateTime retryAfter;
   private LocalDateTime lastUpdated;
 
-  public enum Status {
-    NEW,
-    LOCKED,
-    DONE,
-    RETRY,
-    FAILED
-  }
-
   public WebhookRequest markDone() {
     setStatus(Status.DONE);
     return this;
@@ -52,5 +44,13 @@ public class WebhookRequest {
     LocalDateTime now = LocalDateTime.now();
     this.status = newStatus;
     this.lastUpdated = now;
+  }
+
+  public enum Status {
+    NEW,
+    LOCKED,
+    DONE,
+    RETRY,
+    FAILED
   }
 }

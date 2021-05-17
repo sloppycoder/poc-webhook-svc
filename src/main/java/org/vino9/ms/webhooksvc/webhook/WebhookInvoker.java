@@ -1,6 +1,7 @@
 package org.vino9.ms.webhooksvc.webhook;
 
 import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,15 +38,20 @@ public class WebhookInvoker {
               if (response.statusCode().is2xxSuccessful()) {
                 request.markDone();
               } else {
-                // TODO: should save response details for reference later
-                if (request.getRetries() < MAX_RETRIES) {
-                  request.markRetryAt(LocalDateTime.now().plus(10, ChronoUnit.SECONDS));
-                } else {
-                  request.markFailed();
-                }
+                markRequestError(request);
               }
               return Mono.just(request);
-            });
+            })
+        .doOnError(ReadTimeoutException.class, e -> markRequestError(request));
+  }
+
+  private void markRequestError(WebhookRequest request) {
+    // TODO: should save response details for reference later
+    if (request.getRetries() < MAX_RETRIES) {
+      request.markRetryAt(LocalDateTime.now().plus(10, ChronoUnit.SECONDS));
+    } else {
+      request.markFailed();
+    }
   }
 
   private WebClient getWebClient() {
@@ -53,13 +59,8 @@ public class WebhookInvoker {
     // use long timeout to prepare for high load test
     HttpClient httpClient =
         HttpClient.create()
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
-            .responseTimeout(Duration.ofMillis(3600_000));
-    //                .doOnConnected(conn ->
-    //                        conn.addHandlerLast(new ReadTimeoutHandler(10000,
-    // TimeUnit.MILLISECONDS))
-    //                                .addHandlerLast(new WriteTimeoutHandler(10000,
-    // TimeUnit.MILLISECONDS)));
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2000)
+            .responseTimeout(Duration.ofMillis(20_000));
 
     return WebClient.builder()
         .clientConnector(new ReactorClientHttpConnector(httpClient))
