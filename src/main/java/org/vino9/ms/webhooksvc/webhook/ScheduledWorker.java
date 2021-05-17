@@ -19,7 +19,7 @@ public class ScheduledWorker {
     this.client = client;
   }
 
-  @Scheduled(initialDelay = 2000, fixedRate = 5000)
+  @Scheduled(initialDelayString = "${webhook.scheduler.init-delay:5000}", fixedDelayString = "${webhook.scheduler.init-delay:5000}")
   public void process() {
     if (isSuspended()) {
       log.info("worker suspended");

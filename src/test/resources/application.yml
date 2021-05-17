@@ -7,3 +7,8 @@ spring:
 
   r2dbc:
     url: r2dbc:h2:mem:///testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+
+webhook:
+  scheduler:
+    init-delay: 1000
+    fixed-delay: 1000

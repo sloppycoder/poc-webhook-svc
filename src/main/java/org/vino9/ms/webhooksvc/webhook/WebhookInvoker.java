@@ -15,24 +15,20 @@ import reactor.netty.http.client.HttpClient;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 
 @Component
 @Slf4j
 public class WebhookInvoker {
   public static final int MAX_RETRIES = 10;
-  public static final Map<String, String> ENDPOINTS =
-      Map.of(
-          "CL001", "http://localhost:9999/cl001",
-          "CL002", "http://localhost:9999/cl002",
-          "CL003", "http://localhost:9999/cl003");
+
+  private String baseUrl = "http://localhost:9999/";
 
   Mono<WebhookRequest> invoke(WebhookRequest request) {
     log.info("Processing request {}", request.getMessageId());
     String clientId = request.getClientId();
     return getWebClient()
         .post()
-        .uri(ENDPOINTS.get(clientId))
+        .uri(baseUrl + clientId)
         .exchangeToMono(
             response -> {
               if (response.statusCode().is2xxSuccessful()) {
@@ -43,6 +39,7 @@ public class WebhookInvoker {
               return Mono.just(request);
             })
         .doOnError(ReadTimeoutException.class, e -> markRequestError(request));
+    // TODO: this error handling is not correct.
   }
 
   private void markRequestError(WebhookRequest request) {
@@ -66,5 +63,9 @@ public class WebhookInvoker {
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .build();
+  }
+
+  public void setBaseUrl(String baseUrl) {
+    this.baseUrl = baseUrl;
   }
 }
