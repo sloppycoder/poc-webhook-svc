@@ -4,11 +4,14 @@ server:
 spring:
   application:
     name: webhook
-
+  # r2dbc
   r2dbc:
     url: r2dbc:postgresql://localhost/poc
     username: pocuser
     password: password
+  # webclient related
+  codec:
+    max-in-memory-size: 1MB
 
 logging:
   level:

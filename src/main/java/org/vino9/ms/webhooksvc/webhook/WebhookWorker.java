@@ -1,37 +1,46 @@
-package org.vino9.ms.webhooksvc.worker;
+package org.vino9.ms.webhooksvc.webhook;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.vino9.ms.webhooksvc.data.WebhookRequestRepository;
 
-@Component
+@Service
 @Slf4j
 public class WebhookWorker {
   private final WebhookRequestRepository repository;
+  private final WebhookInvoker client;
   private boolean suspended = false;
 
   @Autowired
-  public WebhookWorker(WebhookRequestRepository repository) {
+  public WebhookWorker(WebhookRequestRepository repository, WebhookInvoker client) {
     this.repository = repository;
+    this.client = client;
   }
 
-  @Scheduled(initialDelay = 5000, fixedRate = 3000)
+  @Scheduled(initialDelay = 2000, fixedRate = 5000)
   public void process() {
     if (isSuspended()) {
       log.info("worker suspended");
       return;
     }
-
-    repository.findAll().log().subscribe(r -> log.info("request message id {}", r.getMessageId()));
+    repository.findAll()
+            .map(client::invoke)
+            .flatMap(s -> s)
+            .flatMap(repository::save)
+            .subscribe();
   }
 
   public boolean isSuspended() {
     return suspended;
   }
 
-  public void setSuspended(boolean suspended) {
-    this.suspended = suspended;
+  public void suspend() {
+    this.suspended = true;
+  }
+
+  public void resume() {
+    this.suspended = false;
   }
 }

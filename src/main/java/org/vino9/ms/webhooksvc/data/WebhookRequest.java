@@ -30,4 +30,27 @@ public class WebhookRequest {
     RETRY,
     FAILED
   }
+
+  public WebhookRequest markDone() {
+    setStatus(Status.DONE);
+    return this;
+  }
+
+  public WebhookRequest markRetryAt(LocalDateTime retryAt) {
+    setStatus(Status.RETRY);
+    this.retryAfter = retryAt;
+    this.retries += 1;
+    return this;
+  }
+
+  public WebhookRequest markFailed() {
+    setStatus(Status.FAILED);
+    return this;
+  }
+
+  private void setStatus(Status newStatus) {
+    LocalDateTime now = LocalDateTime.now();
+    this.status = newStatus;
+    this.lastUpdated = now;
+  }
 }
