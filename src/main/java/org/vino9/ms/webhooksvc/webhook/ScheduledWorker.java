@@ -1,12 +1,10 @@
 package org.vino9.ms.webhooksvc.webhook;
 
-import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.vino9.ms.webhooksvc.data.WebhookRequestRepository;
-import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
