@@ -44,7 +44,7 @@ class WebhookSvcApplicationTests {
 
     Map<String, WebhookRequest> requests = getAllRequestsAsMap();
     assertEquals(requests.get("11-22-33-44").getStatus(), WebhookRequest.Status.DONE);
-    assertEquals(requests.get("11-22-33-45").getStatus(), WebhookRequest.Status.DONE);
+    assertEquals(requests.get("12-22-33-44").getStatus(), WebhookRequest.Status.DONE);
   }
 
   public Map<String, WebhookRequest> getAllRequestsAsMap() {

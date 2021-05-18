@@ -15,17 +15,33 @@ import reactor.netty.http.client.HttpClient;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Slf4j
 public class WebhookInvoker {
   public static final int MAX_RETRIES = 10;
+  public static final int MAX_INFLIGHT_REQUESTS_PER_CLIENT = 1;
 
   private String baseUrl = "http://localhost:9999/";
+  private ConcurrentHashMap<String, Integer> inflightRequests = new ConcurrentHashMap<>();
 
   Mono<WebhookRequest> invoke(WebhookRequest request) {
-    log.info("Processing request {}", request.getMessageId());
+    String messagId = request.getMessageId();
     String clientId = request.getClientId();
+
+    int count = getInflightRequestsCount(clientId);
+    if (count >= MAX_INFLIGHT_REQUESTS_PER_CLIENT) {
+      log.info(
+          "Client {} has request inflight, skipping {} for now...",
+          clientId,
+          request.getMessageId());
+      return Mono.empty();
+    }
+    markInflightRequest(clientId);
+    log.info("Processing request {}", messagId);
+
     return getWebClient()
         .post()
         .uri(baseUrl + clientId)
@@ -38,7 +54,8 @@ public class WebhookInvoker {
               }
               return Mono.just(request);
             })
-        .onErrorReturn(WebClientRequestException.class, markRequestError(request));
+        .onErrorReturn(WebClientRequestException.class, markRequestError(request))
+        .doFinally(t -> releaseInflightRequest(clientId));
   }
 
   private WebhookRequest markRequestError(WebhookRequest request) {
@@ -63,6 +80,30 @@ public class WebhookInvoker {
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .build();
+  }
+
+  synchronized void markInflightRequest(String clientId) {
+    int count = getInflightRequestsCount(clientId) + 1;
+    inflightRequests.put(clientId, count);
+    log.debug("markInflightRequest {} to {}", clientId, count);
+  }
+
+  synchronized void releaseInflightRequest(String clientId) {
+    int count = getInflightRequestsCount(clientId);
+    if (count > 0) {
+      count = 0;
+    }
+    inflightRequests.put(clientId, count);
+    log.debug("releaseInflightRequest {}, {}}", clientId, count);
+  }
+
+  synchronized int getInflightRequestsCount(String clientId) {
+    if (inflightRequests.containsKey(clientId)) {
+      return inflightRequests.get(clientId);
+    } else {
+      inflightRequests.put(clientId, 0);
+      return 0;
+    }
   }
 
   public void setBaseUrl(String baseUrl) {
