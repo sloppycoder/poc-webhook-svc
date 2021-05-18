@@ -1,13 +1,13 @@
 package org.vino9.ms.webhooksvc.webhook;
 
 import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.vino9.ms.webhooksvc.data.WebhookRequest;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
@@ -38,17 +38,17 @@ public class WebhookInvoker {
               }
               return Mono.just(request);
             })
-        .doOnError(ReadTimeoutException.class, e -> markRequestError(request));
-    // TODO: this error handling is not correct.
+        .onErrorReturn(WebClientRequestException.class, markRequestError(request));
   }
 
-  private void markRequestError(WebhookRequest request) {
+  private WebhookRequest markRequestError(WebhookRequest request) {
     // TODO: should save response details for reference later
     if (request.getRetries() < MAX_RETRIES) {
       request.markRetryAt(LocalDateTime.now().plus(10, ChronoUnit.SECONDS));
     } else {
       request.markFailed();
     }
+    return request;
   }
 
   private WebClient getWebClient() {

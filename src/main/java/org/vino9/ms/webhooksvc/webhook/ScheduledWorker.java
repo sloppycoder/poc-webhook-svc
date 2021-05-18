@@ -1,10 +1,12 @@
 package org.vino9.ms.webhooksvc.webhook;
 
+import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.vino9.ms.webhooksvc.data.WebhookRequestRepository;
+import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
@@ -19,7 +21,9 @@ public class ScheduledWorker {
     this.client = client;
   }
 
-  @Scheduled(initialDelayString = "${webhook.scheduler.init-delay:5000}", fixedDelayString = "${webhook.scheduler.init-delay:5000}")
+  @Scheduled(
+      initialDelayString = "${webhook.scheduler.init-delay:5000}",
+      fixedDelayString = "${webhook.scheduler.init-delay:5000}")
   public void process() {
     if (isSuspended()) {
       log.info("worker suspended");

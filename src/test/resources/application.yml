@@ -11,4 +11,4 @@ spring:
 webhook:
   scheduler:
     init-delay: 1000
-    fixed-delay: 1000
+    fixed-delay: 2000

@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.SocketUtils;
 import org.vino9.ms.webhooksvc.data.WebhookRequest;
 import org.vino9.ms.webhooksvc.data.WebhookRequestRepository;
+import org.vino9.ms.webhooksvc.webhook.ScheduledWorker;
 import org.vino9.ms.webhooksvc.webhook.WebhookInvoker;
 
 import java.net.URI;
@@ -24,6 +25,7 @@ class WebhookSvcApplicationTests {
   WireMockExtension wireMock = new WireMockExtension(SocketUtils.findAvailableTcpPort());
 
   @Autowired WebhookInvoker invoker;
+  @Autowired ScheduledWorker worker;
 
   @Autowired WebhookRequestRepository repository;
 
@@ -38,6 +40,7 @@ class WebhookSvcApplicationTests {
 
     // wait for scheduler to start and do its job
     TimeUnit.SECONDS.sleep(4);
+    worker.suspend();
 
     Map<String, WebhookRequest> requests = getAllRequestsAsMap();
     assertEquals(requests.get("11-22-33-44").getStatus(), WebhookRequest.Status.DONE);
