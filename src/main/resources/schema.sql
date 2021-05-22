@@ -7,7 +7,8 @@ create table if not exists webhook_requests (
     status varchar(10),
     retries int default  0,
     retry_after timestamp,
-    last_updated timestamp default current_timestamp
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
 );
 
 create unique index if not exists webhook_requests_message_id on webhook_requests(message_id);

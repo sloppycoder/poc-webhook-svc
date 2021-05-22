@@ -1,12 +1,11 @@
 package org.vino9.ms.webhooksvc.data;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -20,8 +19,9 @@ public class WebhookRequest {
   private String payload;
   private Status status;
   private int retries;
+  private LocalDateTime createdAt;
   private LocalDateTime retryAfter;
-  private LocalDateTime lastUpdated;
+  private LocalDateTime updatedAt;
 
   public WebhookRequest markDone() {
     setStatus(Status.DONE);
@@ -43,7 +43,7 @@ public class WebhookRequest {
   private void setStatus(Status newStatus) {
     LocalDateTime now = LocalDateTime.now();
     this.status = newStatus;
-    this.lastUpdated = now;
+    this.updatedAt = now;
   }
 
   public enum Status {

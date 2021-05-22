@@ -13,6 +13,9 @@ spring:
   codec:
     max-in-memory-size: 1MB
 
+webhook:
+  external-baseurl: http://localhost:9999
+
 logging:
   level:
     io.r2dbc.postgresql.QUERY: DEBUG # for queries
